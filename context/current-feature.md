@@ -11,18 +11,23 @@ Supabase modern publishable API key migration
   (`isNewApiKey()` in the SDK) — confirmed by reading the installed source.
 - App renders and the Supabase client constructs with no key-format warning
   from the SDK, verified via a headless Chromium smoke test.
-- **Not yet verified**: an actual authenticated request (sign-in, insert)
-  against the live project with the new key. The sandbox this was set up in
-  blocks outbound network to `*.supabase.co`, so this needs to be confirmed
-  from a normal dev machine.
+- **Key verified against the live API** (2026-08-24, from local machine):
+  `GET /rest/v1/players` → 200 `[]`, `GET /auth/v1/settings` → 200, and a
+  deliberately bogus key → 401, so the 200s are real authentication rather
+  than a permissive endpoint. The empty array is RLS working as intended —
+  an unauthenticated caller matches no rows.
+- GitHub auth provider confirmed enabled on the project
+  (`/auth/v1/settings` reports `github: true`).
+- Local build verified: `npm ci` + `npm run build` succeeds (379 kB bundle,
+  108 kB gzipped).
 - `.env.example` and the README still say "anon key" — harmless, but the
   naming is stale relative to what's actually configured.
 
 ## Goals
 
-- [ ] Confirm the publishable key works end-to-end from a local machine
-      (sign-in, insert, select all succeed against project
-      `etwqprvkfbjcfqmugqnm`). Revert to the legacy `anon` JWT if it 401s.
+- [x] Confirm the publishable key works against the live project
+      `etwqprvkfbjcfqmugqnm`. Done — see Status. Still unexercised through
+      the UI: an authenticated insert/update as a signed-in user.
 - [ ] Rename `VITE_SUPABASE_ANON_KEY` → something accurate (e.g.
       `VITE_SUPABASE_PUBLISHABLE_KEY`) across `.env.example`,
       `src/lib/supabase.js`, and the README, once confirmed working.
