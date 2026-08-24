@@ -4,11 +4,6 @@ import { supabase } from "./lib/supabase";
 import { getNflPlayers } from "./lib/players";
 
 const POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"];
-const TEAMS = [
-  "ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE","DAL","DEN","DET","GB",
-  "HOU","IND","JAX","KC","LAC","LAR","LV","MIA","MIN","NE","NO","NYG",
-  "NYJ","PHI","PIT","SEA","SF","TB","TEN","WAS",
-];
 const TIERS = [
   { value: 1, label: "Must Draft" },
   { value: 2, label: "Strong Sleeper" },
@@ -57,7 +52,8 @@ export default function CheatSheet({ userId, onSignOut }) {
   const [loading, setLoading] = useState(true);
   const [sortMode, setSortMode] = useState("priority");
   const [starredOnly, setStarredOnly] = useState(false);
-  const [form, setForm] = useState({ name: "", position: "RB", team: "WAS", tier: 3 });
+  // sleeperId is set only by picking a search result; it's the gate on adding.
+  const [form, setForm] = useState({ name: "", position: "", team: "", tier: 3, sleeperId: null });
   const [nflPlayers, setNflPlayers] = useState([]);
   const [showMatches, setShowMatches] = useState(false);
 
@@ -87,12 +83,13 @@ export default function CheatSheet({ userId, onSignOut }) {
   }, [form.name, nflPlayers]);
 
   function pickMatch(p) {
-    setForm((f) => ({ ...f, name: p.name, position: p.position, team: p.team }));
+    setForm((f) => ({ ...f, name: p.name, position: p.position, team: p.team, sleeperId: p.id }));
     setShowMatches(false);
   }
 
   async function addPlayer() {
-    if (!form.name.trim()) return;
+    // Name/position/team are API-sourced, so only a picked search result can be added.
+    if (!form.sleeperId) return;
     const { data, error } = await supabase
       .from("players")
       .insert({
@@ -106,7 +103,7 @@ export default function CheatSheet({ userId, onSignOut }) {
       .select()
       .single();
     if (!error && data) setPlayers((p) => [...p, data]);
-    setForm({ name: "", position: "RB", team: "WAS", tier: 3 });
+    setForm({ name: "", position: "", team: "", tier: 3, sleeperId: null });
     setShowMatches(false);
   }
 
@@ -206,7 +203,8 @@ export default function CheatSheet({ userId, onSignOut }) {
               <input
                 value={form.name}
                 onChange={(e) => {
-                  setForm({ ...form, name: e.target.value });
+                  // Editing the name invalidates any previous pick.
+                  setForm({ ...form, name: e.target.value, position: "", team: "", sleeperId: null });
                   setShowMatches(true);
                 }}
                 onFocus={() => setShowMatches(true)}
@@ -230,29 +228,18 @@ export default function CheatSheet({ userId, onSignOut }) {
                 </div>
               )}
             </div>
+            {/* Filled from the picked search result — not user-editable. */}
             <div>
               <label className="block text-xs font-medium text-stone-500 mb-1">Pos</label>
-              <select
-                value={form.position}
-                onChange={(e) => setForm({ ...form, position: e.target.value })}
-                className="border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
-              >
-                {POSITIONS.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
+              <div className="border border-stone-200 bg-stone-50 rounded px-2 py-1.5 text-sm text-center w-14 text-stone-600">
+                {form.position || "—"}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-stone-500 mb-1">Team</label>
-              <select
-                value={form.team}
-                onChange={(e) => setForm({ ...form, team: e.target.value })}
-                className="border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
-              >
-                {TEAMS.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+              <div className="border border-stone-200 bg-stone-50 rounded px-2 py-1.5 text-sm text-center w-16 text-stone-600">
+                {form.team || "—"}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-stone-500 mb-1">Priority</label>
@@ -268,11 +255,21 @@ export default function CheatSheet({ userId, onSignOut }) {
             </div>
             <button
               onClick={addPlayer}
-              className="flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium px-3 py-1.5 rounded"
+              disabled={!form.sleeperId}
+              className={`flex items-center gap-1 text-white text-sm font-medium px-3 py-1.5 rounded ${
+                form.sleeperId
+                  ? "bg-emerald-700 hover:bg-emerald-800"
+                  : "bg-stone-300 cursor-not-allowed"
+              }`}
             >
               <Plus size={16} /> Add
             </button>
           </div>
+          {form.name.trim() && !form.sleeperId && (
+            <p className="text-xs text-stone-500 mt-2">
+              Pick a player from the search results to add them.
+            </p>
+          )}
         </div>
 
         {/* Controls */}
@@ -341,36 +338,15 @@ export default function CheatSheet({ userId, onSignOut }) {
                   </button>
                   <span className="hidden print:inline text-sm shrink-0 w-4">{p.starred ? "★" : ""}</span>
 
-                  <input
-                    value={p.name}
-                    onChange={(e) => updatePlayer(p.id, "name", e.target.value)}
-                    className="flex-1 basis-32 text-sm font-medium border-none focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded px-1 print:ring-0 print:px-0"
-                  />
+                  {/* Name, position and team come from the Sleeper API — display only. */}
+                  <span className="flex-1 basis-32 text-sm font-medium px-1 print:px-0">{p.name}</span>
 
                   <div className="flex items-center gap-1">
                     <div className={`w-2 h-2 rounded-full shrink-0 ${POS_COLOR[p.position]} print:hidden`} />
-                    <select
-                      value={p.position}
-                      onChange={(e) => updatePlayer(p.id, "position", e.target.value)}
-                      className="text-xs border border-stone-200 rounded px-1 py-0.5 print:hidden"
-                    >
-                      {POSITIONS.map((pos) => (
-                        <option key={pos} value={pos}>{pos}</option>
-                      ))}
-                    </select>
-                    <span className="hidden print:inline text-xs font-semibold w-8">{p.position}</span>
+                    <span className="text-xs font-semibold w-8">{p.position}</span>
                   </div>
 
-                  <select
-                    value={p.team}
-                    onChange={(e) => updatePlayer(p.id, "team", e.target.value)}
-                    className="text-xs border border-stone-200 rounded px-1 py-0.5 print:hidden"
-                  >
-                    {TEAMS.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                  <span className="hidden print:inline text-xs w-8">{p.team}</span>
+                  <span className="text-xs w-8 text-stone-600 print:text-black">{p.team}</span>
 
                   <select
                     value={p.tier}
