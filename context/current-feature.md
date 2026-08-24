@@ -33,13 +33,15 @@ Supabase modern publishable API key migration
       `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` as platform env vars,
       confirm the GitHub OAuth callback/redirect URLs include the deployed
       domain.
-- [ ] Set up Vitest — unit tests around `src/lib/players.js` (Sleeper fetch +
+- [ ] **Vitest** — unit tests around `src/lib/players.js` (Sleeper fetch +
       24h localStorage cache behavior) and `src/lib/supabase.js` /
       `CheatSheet.jsx` data layer (CRUD against the `players` table, RLS
       boundaries).
-- [ ] Manual end-to-end pass once deployed: sign in with GitHub, add players,
+- [ ] **Manual Verification**: Manual end-to-end pass once deployed: sign in with GitHub, add players,
       tag position/team/tier, star sleepers, update rankings, sort, print,
       sign out and back in to confirm the board persisted.
+- [ ] **Tailwind 4**: Remove tailwing.config file (used in version 3, deprecated in v4).
+- [ ] **Try/Catch Improvement** - strengthen logic in try/catch inside player.ts file. Catches silently fail; need logging or other output to verify true errors for better testing.
 
 ## Archived — Features Already Implemented
 
