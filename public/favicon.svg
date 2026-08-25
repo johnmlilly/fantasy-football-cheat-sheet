@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Football">
+  <path d="M4 32C4 32 16 9 32 9s28 23 28 23-12 23-28 23S4 32 4 32Z"
+        fill="#7C4A21" stroke="#4A2A11" stroke-width="3" stroke-linejoin="round"/>
+  <g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round">
+    <path d="M14 20 14 44"/>
+    <path d="M50 20 50 44"/>
+    <path d="M23 32 41 32"/>
+    <path d="M27 26 27 38"/>
+    <path d="M32 26 32 38"/>
+    <path d="M37 26 37 38"/>
+  </g>
+</svg>

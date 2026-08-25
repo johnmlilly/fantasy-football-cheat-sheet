@@ -30,7 +30,12 @@ export default function App() {
           </h1>
           <p className="text-emerald-300 text-sm mb-6">Sign in to save your board</p>
           <button
-            onClick={() => supabase.auth.signInWithOAuth({ provider: "github" })}
+            onClick={() =>
+              supabase.auth.signInWithOAuth({
+                provider: "github",
+                options: { redirectTo: window.location.origin },
+              })
+            }
             className="bg-white text-emerald-900 font-medium px-4 py-2 rounded w-full hover:bg-emerald-50"
           >
             Sign in with GitHub
