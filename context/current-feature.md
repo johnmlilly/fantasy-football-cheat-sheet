@@ -23,13 +23,7 @@ Supabase modern publishable API key migration
 - `.env.example` and the README still say "anon key" — harmless, but the
   naming is stale relative to what's actually configured.
 
-## Goals
-
-- [x] Confirm the publishable key works against the live project
-      `etwqprvkfbjcfqmugqnm`. Done — see Status. Still unexercised through
-      the UI: an authenticated insert/update as a signed-in user.
-
-# Upcoming Features
+## Upcoming Features
 
 - [ ] **Vitest** — unit tests around `src/lib/players.js` (Sleeper fetch +
       24h localStorage cache behavior) and `src/lib/supabase.js` /
