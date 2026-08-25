@@ -28,23 +28,13 @@ Supabase modern publishable API key migration
 - [x] Confirm the publishable key works against the live project
       `etwqprvkfbjcfqmugqnm`. Done — see Status. Still unexercised through
       the UI: an authenticated insert/update as a signed-in user.
-- [ ] Rename `VITE_SUPABASE_ANON_KEY` → something accurate (e.g.
-      `VITE_SUPABASE_PUBLISHABLE_KEY`) across `.env.example`,
-      `src/lib/supabase.js`, and the README, once confirmed working.
 
 # Upcoming Features
 
-- [ ] Deploy to Cloudflare Pages or Netlify (pick one), wire up
-      `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` as platform env vars,
-      confirm the GitHub OAuth callback/redirect URLs include the deployed
-      domain.
 - [ ] **Vitest** — unit tests around `src/lib/players.js` (Sleeper fetch +
       24h localStorage cache behavior) and `src/lib/supabase.js` /
       `CheatSheet.jsx` data layer (CRUD against the `players` table, RLS
       boundaries).
-- [ ] **Manual Verification**: Manual end-to-end pass once deployed: sign in with GitHub, add players,
-      tag position/team/tier, star sleepers, update rankings, sort, print,
-      sign out and back in to confirm the board persisted.
 - [ ] **Tailwind 4**: Remove tailwing.config file (used in version 3, deprecated in v4).
 - [ ] **Try/Catch Improvement** - strengthen logic in try/catch inside player.ts file. Catches silently fail; need logging or other output to verify true errors for better testing.
 
@@ -65,3 +55,18 @@ Supabase modern publishable API key migration
   user.
 - Default branch renamed to `main`; local repo re-pointed to track
   `origin/main`.
+- Deployed to Cloudflare Workers (not Pages/Netlify). `wrangler.jsonc` added
+  at the repo root: assets-only Worker serving `./dist`, with
+  `not_found_handling: "single-page-application"` so client-side routes and the
+  OAuth return URL resolve instead of 404ing. Build-time `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY` set under Settings → Build → Variables (not the
+  runtime Variables and Secrets section — `import.meta.env` is inlined at
+  build, so runtime bindings have no effect and the bundle throws
+  `supabaseUrl is required.`). `signInWithOAuth` now passes
+  `redirectTo: window.location.origin`, so one build serves both localhost and
+  the Workers URL; both origins are on the Supabase redirect allowlist, and the
+  GitHub OAuth app's callback stays pointed at Supabase's `/auth/v1/callback`.
+- Vite upgraded 5.3.1 → 8.2.2, `@vitejs/plugin-react` 4.3.1 → 6.1.0.
+- Manual end-to-end pass against the deployed app: GitHub sign-in, add players,
+  tag position/team/tier, star sleepers, update rankings, sort, print, sign out
+  and back in with the board persisted.
