@@ -242,12 +242,12 @@ export default function CheatSheet({ userId, onSignOut }) {
                 {form.team || "—"}
               </div>
             </div>
-            <div>
+            <div className="w-full sm:w-auto">
               <label className="block text-xs font-medium text-stone-500 mb-1">Priority</label>
               <select
                 value={form.tier}
                 onChange={(e) => setForm({ ...form, tier: e.target.value })}
-                className="border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full sm:w-auto border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
               >
                 {TIERS.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -257,7 +257,7 @@ export default function CheatSheet({ userId, onSignOut }) {
             <button
               onClick={addPlayer}
               disabled={!form.sleeperId}
-              className={`flex items-center gap-1 text-white text-sm font-medium px-3 py-1.5 rounded ${
+              className={`w-full sm:w-auto flex items-center justify-center gap-1 text-white text-sm font-medium px-3 py-1.5 rounded ${
                 form.sleeperId
                   ? "bg-emerald-700 hover:bg-emerald-800"
                   : "bg-stone-300 cursor-not-allowed"
@@ -274,27 +274,32 @@ export default function CheatSheet({ userId, onSignOut }) {
         </div>
 
         {/* Controls */}
-        <div className="bg-stone-100 border-x border-stone-200 px-4 sm:px-6 py-2 flex items-center justify-between flex-wrap gap-2 print:hidden">
+        <div className="bg-stone-100 border-x border-stone-200 px-4 sm:px-6 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 print:hidden">
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-stone-500">Sort:</span>
-            <button
-              onClick={() => setSortMode("priority")}
-              className={`px-2 py-1 rounded text-xs font-medium ${
-                sortMode === "priority" ? "bg-emerald-700 text-white" : "bg-white text-stone-600 border border-stone-300"
-              }`}
-            >
-              Priority
-            </button>
-            <button
-              onClick={() => setSortMode("position")}
-              className={`px-2 py-1 rounded text-xs font-medium ${
-                sortMode === "position" ? "bg-emerald-700 text-white" : "bg-white text-stone-600 border border-stone-300"
-              }`}
-            >
-              Position
-            </button>
+            <span className="text-stone-500 shrink-0">Sort:</span>
+            {/* Segmented control: full width below sm so both options are easy targets. */}
+            <div className="flex flex-1 sm:flex-none rounded border border-stone-300 overflow-hidden">
+              <button
+                onClick={() => setSortMode("priority")}
+                aria-pressed={sortMode === "priority"}
+                className={`flex-1 sm:flex-none px-3 py-1.5 sm:py-1 text-xs font-medium ${
+                  sortMode === "priority" ? "bg-emerald-700 text-white" : "bg-white text-stone-600"
+                }`}
+              >
+                Priority
+              </button>
+              <button
+                onClick={() => setSortMode("position")}
+                aria-pressed={sortMode === "position"}
+                className={`flex-1 sm:flex-none px-3 py-1.5 sm:py-1 text-xs font-medium border-l border-stone-300 ${
+                  sortMode === "position" ? "bg-emerald-700 text-white" : "bg-white text-stone-600"
+                }`}
+              >
+                Position
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between sm:justify-start gap-3">
             <label className="flex items-center gap-1.5 text-sm text-stone-600">
               <input
                 type="checkbox"
