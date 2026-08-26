@@ -1,11 +1,18 @@
 import { TIERS } from "../lib/constants";
+import { getNflPlayers } from "../lib/players";
 import { Plus } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
-export default function PlayerForm({ nflPlayers, onAdd }) {
+export default function PlayerForm({ onAdd }) {
   // sleeperId is set only by picking a search result; it's the gate on adding.
   const [form, setForm] = useState({ name: "", position: "", team: "", tier: 3, sleeperId: null });
   const [showMatches, setShowMatches] = useState(false);
+  const [nflPlayers, setNflPlayers] = useState([]);
+
+  // Cached NFL player list for the name-search dropdown.
+  useEffect(() => {
+    getNflPlayers().then(setNflPlayers).catch(() => setNflPlayers([]));
+  }, []);
 
   const matches = useMemo(() => {
     if (form.name.trim().length < 2) return [];
