@@ -1,6 +1,6 @@
-// Free, keyless NFL player data from Sleeper (api.sleeper.app).
-// Their full player map is ~5MB and updates roughly daily, so cache it locally.
-const FANTASY_POS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
+// Fantasy-relevant NFL players, filtered server-side by the Worker at
+// /api/players (see worker/index.js). Cached locally so repeat visits within
+// the day skip the network entirely.
 const CACHE_KEY = "nfl_players_cache";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
@@ -14,18 +14,9 @@ export async function getNflPlayers() {
     // corrupt cache, fall through to refetch
   }
 
-  const res = await fetch("https://api.sleeper.app/v1/players/nfl");
-  if (!res.ok) throw new Error(`Sleeper API error: ${res.status}`);
-  const raw = await res.json();
-
-  const players = Object.values(raw)
-    .filter((p) => p && FANTASY_POS.has(p.position) && p.team && p.full_name)
-    .map((p) => ({
-      id: p.player_id,
-      name: p.full_name,
-      position: p.position,
-      team: p.team,
-    }));
+  const res = await fetch("/api/players");
+  if (!res.ok) throw new Error(`Player API error: ${res.status}`);
+  const players = await res.json();
 
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ fetchedAt: Date.now(), players }));

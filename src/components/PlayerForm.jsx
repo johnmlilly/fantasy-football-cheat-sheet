@@ -1,7 +1,7 @@
 import { TIERS } from "../lib/constants";
 import { getNflPlayers } from "../lib/players";
 import { Plus } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 
 export default function PlayerForm({ onAdd }) {
   // sleeperId is set only by picking a search result; it's the gate on adding.
@@ -9,10 +9,16 @@ export default function PlayerForm({ onAdd }) {
   const [showMatches, setShowMatches] = useState(false);
   const [nflPlayers, setNflPlayers] = useState([]);
 
-  // Cached NFL player list for the name-search dropdown.
-  useEffect(() => {
+  const requested = useRef(false);
+
+  // The ~67KB player list only feeds the search dropdown, so it isn't fetched
+  // until someone focuses the box. Focus lands well before the second keystroke
+  // that `matches` needs, so the list is normally ready by the time it's used.
+  function loadPlayers() {
+    if (requested.current) return;
+    requested.current = true;
     getNflPlayers().then(setNflPlayers).catch(() => setNflPlayers([]));
-  }, []);
+  }
 
   const matches = useMemo(() => {
     if (form.name.trim().length < 2) return [];
@@ -61,7 +67,10 @@ export default function PlayerForm({ onAdd }) {
                 });
                 setShowMatches(true);
               }}
-              onFocus={() => setShowMatches(true)}
+              onFocus={() => {
+                loadPlayers();
+                setShowMatches(true);
+              }}
               onBlur={() => setTimeout(() => setShowMatches(false), 150)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="Search NFL players…"
