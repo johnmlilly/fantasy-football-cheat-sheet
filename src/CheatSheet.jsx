@@ -91,14 +91,6 @@ export default function CheatSheet({ userId, onSignOut }) {
     })).filter((g) => g.items.length > 0);
   }, [filtered, sortMode]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-stone-400 text-sm">
-        Loading your board…
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-full bg-stone-50 print:bg-white p-3 sm:p-6" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
       <style>{`
@@ -119,12 +111,18 @@ export default function CheatSheet({ userId, onSignOut }) {
           onStarredOnlyChange={setStarredOnly}
         />
         
-        <PlayerList
-          groups={groups}
-          onToggleStar={toggleStar}
-          onUpdatePlayer={updatePlayer}
-          onDeletePlayer={deletePlayer}
-        />
+        {loading ? (
+          <div className="bg-white border border-stone-200 rounded-b-lg px-6 py-10 text-center text-stone-400 text-sm">
+            Loading your board…
+          </div>
+        ) : (
+          <PlayerList
+            groups={groups}
+            onToggleStar={toggleStar}
+            onUpdatePlayer={updatePlayer}
+            onDeletePlayer={deletePlayer}
+          />
+        )}
 
         <Footer />
       </div>
