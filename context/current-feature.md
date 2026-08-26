@@ -26,6 +26,9 @@ Server-side NFL player filtering via Cloudflare Worker (`/api/players`)
   - `vite.config.js` — `playersApi()` dev middleware mirrors the Worker route
     so `npm run dev` behaves like production (in-memory memo so dev reloads
     don't refetch 14 MB).
+  - `src/components/PlayerForm.jsx` — the fetch is lazy: `loadPlayers()` fires
+    on the search input's `onFocus`, guarded by a `useRef` so it runs at most
+    once. A visit that never touches the search box costs no request at all.
 - Verified: `npm run build` passes; `wrangler deploy --dry-run` bundles the
   Worker and reports the `env.ASSETS` binding; `fetchFantasyPlayers()` run
   directly under Node returns 1032 players / 67 KB.
@@ -43,8 +46,6 @@ Server-side NFL player filtering via Cloudflare Worker (`/api/players`)
       Partly addressed: `getNflPlayers()` now throws on a bad API response, but
       `PlayerForm`'s `.catch(() => setNflPlayers([]))` still swallows it, so a
       failure is indistinguishable from "no matches".
-- [ ] **Lazy player load** — `PlayerForm` fetches the list on mount; it is only
-      needed once someone focuses the search box.
 - [ ] **Stale-while-revalidate** the localStorage cache so the 24h expiry is
       never a blocking wait.
 
