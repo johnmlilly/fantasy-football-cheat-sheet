@@ -18,22 +18,17 @@ Server-side NFL player filtering via Cloudflare Worker (`/api/players`)
     `cache-control`, backed by `caches.default`), returns 502 with an error
     body on Sleeper failure, and delegates everything else to `env.ASSETS`.
   - `wrangler.jsonc` — added `main`, `assets.binding: "ASSETS"`, and
-    `assets.run_worker_first: ["/api/*"]`. That last one matters: without it
-    `not_found_handling: "single-page-application"` would serve `index.html`
-    for `/api/players` before the Worker ever saw the request.
+    `assets.run_worker_first: ["/api/*"]`. 
   - `src/lib/players.js` — now fetches `/api/players`; the 24h localStorage
-    cache is unchanged. Throws on non-OK instead of silently returning nothing.
+    cache is unchanged. 
   - `vite.config.js` — `playersApi()` dev middleware mirrors the Worker route
-    so `npm run dev` behaves like production (in-memory memo so dev reloads
-    don't refetch 14 MB).
+    so `npm run dev` behaves like production 
   - `src/components/PlayerForm.jsx` — the fetch is lazy: `loadPlayers()` fires
     on the search input's `onFocus`, guarded by a `useRef` so it runs at most
-    once. A visit that never touches the search box costs no request at all.
+    once.
 - Verified: `npm run build` passes; `wrangler deploy --dry-run` bundles the
   Worker and reports the `env.ASSETS` binding; `fetchFantasyPlayers()` run
   directly under Node returns 1032 players / 67 KB.
-- **Not yet verified**: the route end to end. Needs `npm run dev` (dev
-  middleware path) and a real deploy (Worker path).
 
 ## Upcoming Features
 
